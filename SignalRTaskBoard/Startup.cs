@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SignalRTaskBoard.Persistence;
 
 namespace SignalRTaskBoard
 {
@@ -27,6 +28,11 @@ namespace SignalRTaskBoard
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddDbContext<TaskBoardContext>(options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("Default"));
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

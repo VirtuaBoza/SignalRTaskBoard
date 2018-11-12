@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import styled from 'styled-components';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './components/Column';
@@ -68,31 +69,34 @@ export default class App extends Component {
 
     const tasks = this.state.tasks.map(task => {
       if (task.id.toString() === draggableId) {
-        task.columnId = destinationColumnId;
-        task.indexInColumn = destination.index;
+        return {
+          ...task,
+          columnId: destinationColumnId,
+          indexInColumn: destination.index,
+        };
       } else if (sourceColumnId === destinationColumnId) {
         if (
           task.indexInColumn > source.index &&
           task.indexInColumn <= destination.index
         ) {
-          task.indexInColumn -= 1;
+          return { ...task, indexInColumn: task.indexInColumn - 1 };
         } else if (
           task.indexInColumn < source.index &&
           task.indexInColumn >= destination.index
         ) {
-          task.indexInColumn += 1;
+          return { ...task, indexInColumn: task.indexInColumn + 1 };
         }
       } else {
         if (
           task.columnId === sourceColumnId &&
           task.indexInColumn > source.index
         ) {
-          task.indexInColumn -= 1;
+          return { ...task, indexInColumn: task.indexInColumn - 1 };
         } else if (
           task.columnId === destinationColumnId &&
           task.indexInColumn >= destination.index
         ) {
-          task.indexInColumn += 1;
+          return { ...task, indexInColumn: task.indexInColumn + 1 };
         }
       }
       return task;
@@ -132,6 +136,7 @@ export default class App extends Component {
   render() {
     return (
       <DragDropContext onDragEnd={this.handleDragEnd}>
+        <CssBaseline />
         <Container>
           {this.state.columns.map(column => {
             const tasks = this.state.tasks.filter(

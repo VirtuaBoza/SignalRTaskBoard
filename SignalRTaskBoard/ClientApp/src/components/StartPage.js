@@ -6,7 +6,7 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
-import LockIcon from '@material-ui/icons/LockOutlined';
+import HomeIcon from '@material-ui/icons/Home';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
@@ -92,7 +92,7 @@ class StartPage extends Component {
       <main className={classes.main}>
         <Paper className={classes.paper}>
           <Avatar className={classes.avatar}>
-            <LockIcon />
+            <HomeIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             Enter Taskboard ID
@@ -120,7 +120,7 @@ class StartPage extends Component {
               type="submit"
               fullWidth
               variant="contained"
-              color="primary"
+              color="secondary"
               className={classes.submit}
               onClick={this.handleCreateNewTaskboard}
             >

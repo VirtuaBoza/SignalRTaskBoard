@@ -14,7 +14,7 @@ class Task extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      inEditMode: false,
+      inEditMode: props.task.content ? false : true,
     };
 
     this.handleClick = this.handleClick.bind(this);
@@ -65,10 +65,10 @@ class Task extends React.Component {
           <Container ref={provided.innerRef}>
             <Card {...provided.draggableProps} {...provided.dragHandleProps}>
               <CardContent onClick={this.handleClick}>
-                {inEditMode || !task.content ? (
+                {inEditMode ? (
                   <TextField
-                    id={task.id}
-                    value={task.content}
+                    id={task.id.toString()}
+                    value={task.content ? task.content : ''}
                     onChange={onChange}
                     onBlur={this.handleBlur}
                     onKeyPress={this.handleKeyPress}
@@ -77,7 +77,7 @@ class Task extends React.Component {
                     autoFocus
                   />
                 ) : (
-                  <Typography variant="title">{task.content}</Typography>
+                  <Typography variant="h6">{task.content}</Typography>
                 )}
               </CardContent>
             </Card>

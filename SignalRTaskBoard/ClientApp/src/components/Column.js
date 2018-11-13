@@ -32,7 +32,7 @@ const Column = ({ column, tasks, onTaskChange, classes }) => {
     <div className={classes.container}>
       <Paper>
         <div className={classes.titleContainer}>
-          <Typography variant="title">{column.title}</Typography>
+          <Typography variant="h5">{column.title}</Typography>
         </div>
         <Droppable droppableId={column.id.toString()}>
           {(provided, snapshot) => (

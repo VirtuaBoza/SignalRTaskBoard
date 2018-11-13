@@ -26,10 +26,8 @@ namespace SignalRTaskBoard.Controllers
                 .ToListAsync();
         }
 
-        [HttpPost("{taskBoardId}")]
-        public async Task<WorkItem> Post(
-            int taskBoardId,
-            WorkItem workItem)
+        [HttpPost("")]
+        public async Task<WorkItem> Post([FromBody] WorkItem workItem)
         {
             context.WorkItems.Add(workItem);
             await context.SaveChangesAsync();

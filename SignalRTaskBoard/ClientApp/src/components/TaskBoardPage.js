@@ -10,9 +10,11 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'flex-start',
+    marginTop: theme.spacing.unit * 4,
   },
   addButton: {
     margin: theme.spacing.unit,
+    marginTop: theme.spacing.unit * 2,
   },
 });
 
@@ -142,13 +144,15 @@ class TaskBoardPage extends Component {
   }
 
   handleAddClicked() {
+    console.log(this.state.tasks.filter(task => task.columnId === 0).length);
+
     const newItem = {
       indexInColumn: this.state.tasks.filter(task => task.columnId === 0)
         .length,
-      taskBoadId: this.props.match.params.id,
+      taskBoardId: this.props.match.params.id,
     };
 
-    fetch(`/api/workitems/${this.props.match.params.id}`, {
+    fetch(`/api/workitems`, {
       method: 'POST',
       body: JSON.stringify(newItem),
       headers: {

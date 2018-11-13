@@ -65,7 +65,7 @@ class Task extends React.Component {
           <Container ref={provided.innerRef}>
             <Card {...provided.draggableProps} {...provided.dragHandleProps}>
               <CardContent onClick={this.handleClick}>
-                {inEditMode ? (
+                {inEditMode || !task.content ? (
                   <TextField
                     id={task.id}
                     value={task.content}

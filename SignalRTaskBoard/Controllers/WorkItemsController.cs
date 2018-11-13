@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SignalRTaskBoard.Models;
 using SignalRTaskBoard.Persistence;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SignalRTaskBoard.Controllers
@@ -17,10 +18,22 @@ namespace SignalRTaskBoard.Controllers
             this.context = context;
         }
 
-        [HttpGet("")]
-        public async Task<IEnumerable<WorkItem>> Get()
+        [HttpGet("{taskBoardId}")]
+        public async Task<IEnumerable<WorkItem>> Get(int taskBoardId)
         {
-            return await context.WorkItems.ToListAsync();
+            return await context.WorkItems
+                .Where(w => w.TaskBoardId == taskBoardId)
+                .ToListAsync();
+        }
+
+        [HttpPost("{taskBoardId}")]
+        public async Task<WorkItem> Post(
+            int taskBoardId,
+            WorkItem workItem)
+        {
+            context.WorkItems.Add(workItem);
+            await context.SaveChangesAsync();
+            return workItem;
         }
 
         [HttpPut("")]

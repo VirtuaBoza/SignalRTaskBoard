@@ -9,6 +9,7 @@ namespace SignalRTaskBoard.Persistence
         {
         }
 
+        public DbSet<TaskBoard> TaskBoards { get; set; }
         public DbSet<WorkItem> WorkItems { get; set; }
     }
 }

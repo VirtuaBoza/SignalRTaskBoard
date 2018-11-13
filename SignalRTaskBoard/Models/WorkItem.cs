@@ -9,5 +9,6 @@
         public float? EstimatedHours { get; set; }
         public float? HoursRemaining { get; set; }
         public float? HoursCompleted { get; set; }
+        public int TaskBoardId { get; set; }
     }
 }

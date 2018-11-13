@@ -1,37 +1,51 @@
 import React from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import { Droppable } from 'react-beautiful-dnd';
-import styled from 'styled-components';
 import Task from './Task';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
-const Container = styled.div`
-  margin: 8px;
-  width: 300px;
-`;
+const styles = theme => ({
+  container: {
+    margin: theme.spacing.unit,
+    width: 300,
+  },
+  titleContainer: {
+    padding: theme.spacing.unit * 2,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  addButton: {
+    margin: theme.spacing.unit,
+  },
+  taskList: {
+    padding: theme.spacing.unit,
+    minHeight: '100px',
+  },
+  taskListDragging: {
+    padding: theme.spacing.unit,
+    minHeight: '100px',
+    backgroundColor: 'lightgray',
+  },
+});
 
-const TaskList = styled.div`
-  padding: 8px;
-  min-height: 100px;
-`;
-
-const TitleContainer = styled.div`
-  padding: 8px;
-`;
-
-const Column = ({ column, tasks, onTaskChange }) => {
+const Column = ({ column, tasks, onTaskChange, classes }) => {
   return (
-    <Container>
+    <div className={classes.container}>
       <Paper>
-        <TitleContainer>
+        <div className={classes.titleContainer}>
           <Typography variant="title">{column.title}</Typography>
-        </TitleContainer>
+        </div>
         <Droppable droppableId={column.id.toString()}>
           {(provided, snapshot) => (
-            <TaskList
+            <div
+              className={
+                snapshot.isDraggingOver
+                  ? classes.taskListDragging
+                  : classes.taskList
+              }
               ref={provided.innerRef}
               {...provided.droppableProps}
-              isDraggingOver={snapshot.isDraggingOver}
             >
               {[...tasks]
                 .sort((a, b) => a.indexInColumn - b.indexInColumn)
@@ -39,12 +53,12 @@ const Column = ({ column, tasks, onTaskChange }) => {
                   <Task key={task.id} task={task} onChange={onTaskChange} />
                 ))}
               {provided.placeholder}
-            </TaskList>
+            </div>
           )}
         </Droppable>
       </Paper>
-    </Container>
+    </div>
   );
 };
 
-export default Column;
+export default withStyles(styles)(Column);

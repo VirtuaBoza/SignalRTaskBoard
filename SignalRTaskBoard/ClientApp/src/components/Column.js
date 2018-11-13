@@ -9,14 +9,12 @@ const styles = theme => ({
   container: {
     margin: theme.spacing.unit,
     width: 300,
+    minWidth: 300,
   },
   titleContainer: {
     padding: theme.spacing.unit * 2,
     display: 'flex',
     alignItems: 'center',
-  },
-  addButton: {
-    margin: theme.spacing.unit,
   },
   taskList: {
     padding: theme.spacing.unit,

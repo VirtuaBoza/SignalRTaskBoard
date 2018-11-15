@@ -4,6 +4,8 @@ import { withStyles } from '@material-ui/core/styles';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './Column';
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import { COLUMNS } from '../constants';
 
 const styles = theme => ({
   container: {
@@ -24,20 +26,6 @@ class TaskBoardPage extends Component {
 
     this.state = {
       tasks: [],
-      columns: [
-        {
-          id: 0,
-          title: 'To do',
-        },
-        {
-          id: 1,
-          title: 'In Progress',
-        },
-        {
-          id: 2,
-          title: 'Done',
-        },
-      ],
     };
 
     this.handleDragEnd = this.handleDragEnd.bind(this);
@@ -46,7 +34,7 @@ class TaskBoardPage extends Component {
   }
 
   componentDidMount() {
-    fetch(`/api/workitems/${this.props.match.params.id}`)
+    fetch(`/api/taskboards/${this.props.match.params.id}/workitems`)
       .then(response => {
         if (response.ok) return response.json();
         throw new Error(response.statusText);
@@ -60,7 +48,8 @@ class TaskBoardPage extends Component {
   }
 
   handleDragEnd(result) {
-    const { destination, source, draggableId } = result;
+    const { draggableId, destination, source } = result;
+
     if (!destination) return;
 
     if (
@@ -70,14 +59,35 @@ class TaskBoardPage extends Component {
       return;
     }
 
-    const sourceColumnId = this.state.columns.find(
+    const tasks = this.reorderTasks(draggableId, destination, source);
+
+    fetch('api/workitems', {
+      method: 'PUT',
+      body: JSON.stringify(tasks),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (response.ok) {
+          this.setState({ tasks });
+        } else {
+          throw response.statusText;
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  reorderTasks(draggableId, destination, source) {
+    const sourceColumnId = COLUMNS.find(
       column => column.id.toString() === source.droppableId,
     ).id;
-    const destinationColumnId = this.state.columns.find(
+    const destinationColumnId = COLUMNS.find(
       column => column.id.toString() === destination.droppableId,
     ).id;
-
-    const tasks = this.state.tasks.map(task => {
+    return this.state.tasks.map(task => {
       if (task.id.toString() === draggableId) {
         return {
           ...task,
@@ -111,32 +121,12 @@ class TaskBoardPage extends Component {
       }
       return task;
     });
-
-    this.setState({ tasks });
-
-    fetch('api/workitems', {
-      method: 'PUT',
-      body: JSON.stringify(tasks),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(response.statusText);
-      })
-      .then(jsonResponse => {
-        console.log('success', jsonResponse);
-      })
-      .catch(error => {
-        console.error(error);
-      });
   }
 
   handleTaskChange(event) {
     const tasks = this.state.tasks.map(task => {
       if (task.id.toString() === event.target.id) {
-        task.content = event.target.value;
+        return { ...task, content: event.target.value };
       }
       return task;
     });
@@ -144,20 +134,8 @@ class TaskBoardPage extends Component {
   }
 
   handleAddClicked() {
-    console.log(this.state.tasks.filter(task => task.columnId === 0).length);
-
-    const newItem = {
-      indexInColumn: this.state.tasks.filter(task => task.columnId === 0)
-        .length,
-      taskBoardId: this.props.match.params.id,
-    };
-
-    fetch(`/api/workitems`, {
+    fetch(`/api/taskboards/${this.props.match.params.id}/workitems`, {
       method: 'POST',
-      body: JSON.stringify(newItem),
-      headers: {
-        'Content-Type': 'application/json',
-      },
     })
       .then(response => {
         if (response.ok) return response.json();
@@ -172,10 +150,14 @@ class TaskBoardPage extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, match } = this.props;
+    const { tasks } = this.state;
 
     return (
       <DragDropContext onDragEnd={this.handleDragEnd}>
+        <div className={classes.container}>
+          <Typography variant="h4">Taskboard ID: {match.params.id}</Typography>
+        </div>
         <div className={classes.container}>
           <Button
             color="primary"
@@ -184,19 +166,14 @@ class TaskBoardPage extends Component {
           >
             Add
           </Button>
-          {this.state.columns.map(column => {
-            const tasks = this.state.tasks.filter(
-              task => task.columnId === column.id,
-            );
-            return (
-              <Column
-                key={column.id}
-                column={column}
-                tasks={tasks}
-                onTaskChange={this.handleTaskChange}
-              />
-            );
-          })}
+          {COLUMNS.map(column => (
+            <Column
+              key={column.id}
+              column={column}
+              tasks={tasks.filter(task => task.columnId === column.id)}
+              onTaskChange={this.handleTaskChange}
+            />
+          ))}
         </div>
       </DragDropContext>
     );

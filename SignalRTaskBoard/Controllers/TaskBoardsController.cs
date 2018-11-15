@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SignalRTaskBoard.Models;
 using SignalRTaskBoard.Persistence;
+using System;
 using System.Threading.Tasks;
 
 namespace SignalRTaskBoard.Controllers
@@ -19,30 +20,36 @@ namespace SignalRTaskBoard.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int? id)
         {
-            if (id.HasValue)
+            if (!id.HasValue) return BadRequest();
+
+            var taskboard = await context.TaskBoards
+                .Include(t => t.WorkItems)
+                .SingleOrDefaultAsync(t => t.Id == id.Value);
+
+            if (taskboard == null)
             {
-                var taskboard = await context.TaskBoards
-                    .Include(t => t.WorkItems)
-                    .SingleOrDefaultAsync(t => t.Id == id.Value);
-
-                if (taskboard == null)
-                {
-                    return BadRequest();
-                }
-
-                return Ok(taskboard);
+                return BadRequest();
             }
 
-            return BadRequest();
+            return Ok(taskboard);
+
         }
 
         [HttpPost("")]
-        public async Task<TaskBoard> Post()
+        public async Task<IActionResult> Post()
         {
             var taskBoard = new TaskBoard();
             context.TaskBoards.Add(taskBoard);
-            await context.SaveChangesAsync();
-            return taskBoard;
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok(taskBoard);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest("Unable to create taskboard.");
+            }
         }
     }
 }

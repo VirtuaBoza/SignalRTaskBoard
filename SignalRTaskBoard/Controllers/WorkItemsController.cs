@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SignalRTaskBoard.Models;
 using SignalRTaskBoard.Persistence;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SignalRTaskBoard.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     public class WorkItemsController : Controller
     {
         private readonly TaskBoardContext context;
@@ -18,36 +19,66 @@ namespace SignalRTaskBoard.Controllers
             this.context = context;
         }
 
-        [HttpGet("{taskBoardId}")]
-        public async Task<IEnumerable<WorkItem>> Get(int taskBoardId)
+        [HttpGet("taskboards/{taskBoardId}/workitems")]
+        public async Task<IEnumerable<WorkItem>> GetTasks(int taskBoardId)
         {
             return await context.WorkItems
                 .Where(w => w.TaskBoardId == taskBoardId)
                 .ToListAsync();
         }
 
-        [HttpPost("")]
-        public async Task<WorkItem> Post([FromBody] WorkItem workItem)
+        [HttpPost("taskboards/{taskBoardId}/workitems")]
+        public async Task<IActionResult> CreateNewTask(int taskBoardId)
         {
+            var workItem = new WorkItem
+            {
+                TaskBoardId = taskBoardId,
+                IndexInColumn = context.WorkItems
+                    .Count(i => i.TaskBoardId == taskBoardId && i.ColumnId == 0),
+            };
             context.WorkItems.Add(workItem);
-            await context.SaveChangesAsync();
-            return workItem;
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok(workItem);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest("Failed to create new task.");
+            }
         }
 
-        [HttpPut("")]
-        public async Task<IEnumerable<WorkItem>> Put([FromBody] WorkItem[] workItems)
+        [HttpPut("[controller]")]
+        public async Task<IActionResult> UpdateTasks([FromBody] WorkItem[] workItems)
         {
             context.WorkItems.UpdateRange(workItems);
-            await context.SaveChangesAsync();
-            return workItems;
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest("Failed to save tasks.");
+            }
         }
 
-        [HttpPut("{id}")]
-        public async Task<WorkItem> Put([FromBody] WorkItem workItem)
+        [HttpPut("[controller]/{id}")]
+        public async Task<IActionResult> UpdateTask([FromBody] WorkItem workItem)
         {
             context.WorkItems.Update(workItem);
-            await context.SaveChangesAsync();
-            return workItem;
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest("Failed to save task.");
+            }
         }
     }
 }

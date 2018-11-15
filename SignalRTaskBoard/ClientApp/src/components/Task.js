@@ -37,17 +37,9 @@ class Task extends React.Component {
       headers: {
         'Content-Type': 'application/json',
       },
-    })
-      .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(response.statusText);
-      })
-      .then(jsonResponse => {
-        console.log('success', jsonResponse);
-      })
-      .catch(error => {
-        console.error(error);
-      });
+    }).catch(error => {
+      console.error(error);
+    });
   }
 
   handleKeyPress(event) {

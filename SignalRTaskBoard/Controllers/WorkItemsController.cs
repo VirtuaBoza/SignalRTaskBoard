@@ -101,11 +101,9 @@ namespace SignalRTaskBoard.Controllers
             var existingWorkItem = await context.WorkItems.AsNoTracking()
                 .SingleOrDefaultAsync(i => i.Id == id);
 
-            if (existingWorkItem != null)
-            {
-                context.WorkItems.Remove(existingWorkItem);
-            }
+            if (existingWorkItem == null) return Ok();
 
+            context.WorkItems.Remove(existingWorkItem);
             try
             {
                 await context.SaveChangesAsync();

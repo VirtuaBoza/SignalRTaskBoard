@@ -4,11 +4,13 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
-import styled from 'styled-components';
+import { withStyles } from '@material-ui/core/styles';
 
-const Container = styled.div`
-  margin-bottom: 8px;
-`;
+const styles = theme => ({
+  container: {
+    marginBottom: 8,
+  },
+});
 
 class Task extends React.Component {
   constructor(props) {
@@ -49,12 +51,12 @@ class Task extends React.Component {
   }
 
   render() {
-    const { task, onChange } = this.props;
+    const { task, onChange, classes } = this.props;
     const { inEditMode } = this.state;
     return (
       <Draggable draggableId={task.id.toString()} index={task.indexInColumn}>
         {provided => (
-          <Container ref={provided.innerRef}>
+          <div className={classes.container} ref={provided.innerRef}>
             <Card {...provided.draggableProps} {...provided.dragHandleProps}>
               <CardContent onClick={this.handleClick}>
                 {inEditMode ? (
@@ -73,11 +75,11 @@ class Task extends React.Component {
                 )}
               </CardContent>
             </Card>
-          </Container>
+          </div>
         )}
       </Draggable>
     );
   }
 }
 
-export default Task;
+export default withStyles(styles)(Task);

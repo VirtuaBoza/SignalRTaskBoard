@@ -33,15 +33,25 @@ class Task extends React.Component {
 
     const task = { ...this.props.task, content: event.target.value };
 
-    fetch(`api/workitems/${task.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(task),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).catch(error => {
-      console.error(error);
-    });
+    if (task.content && !task.content.match(/^ *$/)) {
+      fetch(`api/workitems/${task.id}`, {
+        method: 'POST',
+        body: JSON.stringify(task),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch(error => {
+        console.error(error);
+      });
+    } else {
+      fetch(`api/workitems/${task.id}`, {
+        method: 'DELETE',
+      })
+        .then(() => this.props.onDelete(task))
+        .catch(error => {
+          console.error(error);
+        });
+    }
   }
 
   handleKeyPress(event) {

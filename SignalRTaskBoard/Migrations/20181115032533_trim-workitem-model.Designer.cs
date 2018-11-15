@@ -9,8 +9,8 @@ using SignalRTaskBoard.Persistence;
 namespace SignalRTaskBoard.Migrations
 {
     [DbContext(typeof(TaskBoardContext))]
-    [Migration("20181111022250_initial")]
-    partial class initial
+    [Migration("20181115032533_trim-workitem-model")]
+    partial class trimworkitemmodel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,11 +20,20 @@ namespace SignalRTaskBoard.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("SignalRTaskBoard.Models.WorkItem", b =>
+            modelBuilder.Entity("SignalRTaskBoard.Models.TaskBoard", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TaskBoards");
+                });
+
+            modelBuilder.Entity("SignalRTaskBoard.Models.WorkItem", b =>
+                {
+                    b.Property<string>("Id");
 
                     b.Property<int>("ColumnId");
 
@@ -32,9 +41,21 @@ namespace SignalRTaskBoard.Migrations
 
                     b.Property<int>("IndexInColumn");
 
+                    b.Property<int>("TaskBoardId");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("TaskBoardId");
+
                     b.ToTable("WorkItems");
+                });
+
+            modelBuilder.Entity("SignalRTaskBoard.Models.WorkItem", b =>
+                {
+                    b.HasOne("SignalRTaskBoard.Models.TaskBoard")
+                        .WithMany("WorkItems")
+                        .HasForeignKey("TaskBoardId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

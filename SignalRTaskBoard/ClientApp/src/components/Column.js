@@ -27,7 +27,7 @@ const styles = theme => ({
   },
 });
 
-const Column = ({ column, tasks, onTaskChange, classes }) => {
+const Column = ({ column, tasks, onTaskChange, classes, onTaskDelete }) => {
   return (
     <div className={classes.container}>
       <Paper>
@@ -48,7 +48,12 @@ const Column = ({ column, tasks, onTaskChange, classes }) => {
               {[...tasks]
                 .sort((a, b) => a.indexInColumn - b.indexInColumn)
                 .map(task => (
-                  <Task key={task.id} task={task} onChange={onTaskChange} />
+                  <Task
+                    key={task.id}
+                    task={task}
+                    onChange={onTaskChange}
+                    onDelete={onTaskDelete}
+                  />
                 ))}
               {provided.placeholder}
             </div>

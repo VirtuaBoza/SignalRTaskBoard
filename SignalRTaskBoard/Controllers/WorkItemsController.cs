@@ -65,10 +65,24 @@ namespace SignalRTaskBoard.Controllers
             }
         }
 
-        [HttpPut("[controller]/{id}")]
+        [HttpPost("[controller]/{id}")]
         public async Task<IActionResult> UpdateTask([FromBody] WorkItem workItem)
         {
-            context.WorkItems.Update(workItem);
+            workItem.IndexInColumn = context.WorkItems
+                .Count(i => i.ColumnId == workItem.ColumnId);
+
+            var existingWorkItem = await context.WorkItems.AsNoTracking()
+                .SingleOrDefaultAsync(i => i.Id == workItem.Id);
+
+            if (existingWorkItem == null)
+            {
+                context.WorkItems.Add(workItem);
+            }
+            else
+            {
+                context.WorkItems.Update(workItem);
+            }
+
             try
             {
                 await context.SaveChangesAsync();
@@ -78,6 +92,29 @@ namespace SignalRTaskBoard.Controllers
             {
                 Console.WriteLine(e);
                 return BadRequest("Failed to save task.");
+            }
+        }
+
+        [HttpDelete("[controller]/{id}")]
+        public async Task<IActionResult> DeleteTask(string id)
+        {
+            var existingWorkItem = await context.WorkItems.AsNoTracking()
+                .SingleOrDefaultAsync(i => i.Id == id);
+
+            if (existingWorkItem != null)
+            {
+                context.WorkItems.Remove(existingWorkItem);
+            }
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest("Failed to delete task.");
             }
         }
     }

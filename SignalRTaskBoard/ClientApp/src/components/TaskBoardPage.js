@@ -6,6 +6,7 @@ import Column from './Column';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { COLUMNS } from '../constants';
+import uuidv4 from 'uuid/v4';
 
 const styles = theme => ({
   container: {
@@ -25,26 +26,29 @@ class TaskBoardPage extends Component {
     super(props);
 
     this.state = {
+      taskboardId: '',
       tasks: [],
     };
 
     this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleTaskChange = this.handleTaskChange.bind(this);
     this.handleAddClicked = this.handleAddClicked.bind(this);
+    this.handleTaskDelete = this.handleTaskDelete.bind(this);
   }
 
   componentDidMount() {
-    fetch(`/api/taskboards/${this.props.match.params.id}/workitems`)
+    fetch(`/api/taskboards/${this.props.match.params.id}`)
       .then(response => {
         if (response.ok) return response.json();
-        throw new Error(response.statusText);
+        throw response;
       })
-      .then(tasks => {
-        this.setState({ tasks });
+      .then(taskboard => {
+        this.setState({
+          taskboardId: taskboard.id,
+          tasks: taskboard.workItems,
+        });
       })
-      .catch(error => {
-        console.error(error);
-      });
+      .catch(() => this.props.history.push('/'));
   }
 
   handleDragEnd(result) {
@@ -134,29 +138,30 @@ class TaskBoardPage extends Component {
   }
 
   handleAddClicked() {
-    fetch(`/api/taskboards/${this.props.match.params.id}/workitems`, {
-      method: 'POST',
-    })
-      .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(response.statusText);
-      })
-      .then(task => {
-        this.setState({ tasks: [...this.state.tasks, task] });
-      })
-      .catch(error => {
-        console.error(error);
-      });
+    const task = {
+      taskBoardId: this.state.taskboardId,
+      id: uuidv4(),
+      content: '',
+      columnId: 0,
+      indexInColumn: this.state.tasks.filter(t => t.columnId === 0).length,
+    };
+    this.setState({ tasks: [...this.state.tasks, task] });
+  }
+
+  handleTaskDelete(task) {
+    const tasks = [...this.state.tasks];
+    tasks.splice(this.state.tasks.indexOf(task), 1);
+    this.setState({ tasks });
   }
 
   render() {
-    const { classes, match } = this.props;
-    const { tasks } = this.state;
+    const { classes } = this.props;
+    const { tasks, taskboardId } = this.state;
 
     return (
       <DragDropContext onDragEnd={this.handleDragEnd}>
         <div className={classes.container}>
-          <Typography variant="h4">Taskboard ID: {match.params.id}</Typography>
+          <Typography variant="h4">Taskboard ID: {taskboardId}</Typography>
         </div>
         <div className={classes.container}>
           <Button
@@ -172,6 +177,7 @@ class TaskBoardPage extends Component {
               column={column}
               tasks={tasks.filter(task => task.columnId === column.id)}
               onTaskChange={this.handleTaskChange}
+              onTaskDelete={this.handleTaskDelete}
             />
           ))}
         </div>

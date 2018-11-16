@@ -46,19 +46,20 @@ namespace SignalRTaskBoard.Controllers
         [HttpPost("[controller]/{id}")]
         public async Task<IActionResult> UpdateTask([FromBody] WorkItem workItem)
         {
-            var existingWorkItem = await context.WorkItems.AsNoTracking()
-                .SingleOrDefaultAsync(i => i.Id == workItem.Id);
+            var workItemExists = await context.WorkItems
+                .Where(i => i.Id == workItem.Id).AnyAsync();
 
-            if (existingWorkItem == null)
+            if (workItemExists)
             {
-                workItem.IndexInColumn = context.WorkItems
-                    .Count(i => i.ColumnId == workItem.ColumnId);
-
-                context.WorkItems.Add(workItem);
+                context.WorkItems.Update(workItem);
             }
             else
             {
-                context.WorkItems.Update(workItem);
+                workItem.IndexInColumn = context.WorkItems
+                    .Count(i => i.ColumnId == workItem.ColumnId &&
+                                i.TaskBoardId == workItem.TaskBoardId);
+
+                context.WorkItems.Add(workItem);
             }
 
             try
@@ -76,7 +77,7 @@ namespace SignalRTaskBoard.Controllers
         [HttpDelete("[controller]/{id}")]
         public async Task<IActionResult> DeleteTask(string id)
         {
-            var existingWorkItem = await context.WorkItems.AsNoTracking()
+            var existingWorkItem = await context.WorkItems
                 .SingleOrDefaultAsync(i => i.Id == id);
 
             if (existingWorkItem == null) return Ok();

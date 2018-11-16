@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import { DragDropContext } from 'react-beautiful-dnd';
-import Column from './Column';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import { COLUMNS } from '../constants';
+import { withStyles } from '@material-ui/core/styles';
+import { DragDropContext } from 'react-beautiful-dnd';
 import uuidv4 from 'uuid/v4';
+import Column from './Column';
+import { COLUMNS } from '../constants';
 
 const styles = theme => ({
   container: {
@@ -26,27 +26,25 @@ class TaskBoardPage extends Component {
     super(props);
 
     this.state = {
-      taskboardId: '',
-      tasks: [],
+      workItems: [],
     };
 
+    this.taskBoardId = this.props.match.params.id;
+
     this.handleDragEnd = this.handleDragEnd.bind(this);
-    this.handleTaskChange = this.handleTaskChange.bind(this);
+    this.handleWorkItemChange = this.handleWorkItemChange.bind(this);
     this.handleAddClicked = this.handleAddClicked.bind(this);
-    this.handleTaskDelete = this.handleTaskDelete.bind(this);
+    this.handleWorkItemDelete = this.handleWorkItemDelete.bind(this);
   }
 
   componentDidMount() {
-    fetch(`/api/taskboards/${this.props.match.params.id}`)
+    fetch(`/api/taskboards/${this.taskBoardId}/workitems`)
       .then(response => {
         if (response.ok) return response.json();
         throw response;
       })
-      .then(taskboard => {
-        this.setState({
-          taskboardId: taskboard.id,
-          tasks: taskboard.workItems,
-        });
+      .then(workItems => {
+        this.setState({ workItems });
       })
       .catch(() => this.props.history.push('/'));
   }
@@ -63,18 +61,19 @@ class TaskBoardPage extends Component {
       return;
     }
 
-    const tasks = this.reorderTasks(draggableId, destination, source);
+    const workItems = this.reorderWorkItems(draggableId, destination, source);
+    this.setState({ workItems });
 
-    fetch('api/workitems', {
+    fetch(`api/taskboards/${this.taskBoardId}/workitems`, {
       method: 'PUT',
-      body: JSON.stringify(tasks),
+      body: JSON.stringify(workItems),
       headers: {
         'Content-Type': 'application/json',
       },
     })
       .then(response => {
         if (response.ok) {
-          this.setState({ tasks });
+          this.setState({ workItems });
         } else {
           throw response.statusText;
         }
@@ -84,84 +83,85 @@ class TaskBoardPage extends Component {
       });
   }
 
-  reorderTasks(draggableId, destination, source) {
+  reorderWorkItems(draggableId, destination, source) {
     const sourceColumnId = COLUMNS.find(
       column => column.id.toString() === source.droppableId,
     ).id;
     const destinationColumnId = COLUMNS.find(
       column => column.id.toString() === destination.droppableId,
     ).id;
-    return this.state.tasks.map(task => {
-      if (task.id.toString() === draggableId) {
+    return this.state.workItems.map(workItem => {
+      if (workItem.id.toString() === draggableId) {
         return {
-          ...task,
+          ...workItem,
           columnId: destinationColumnId,
           indexInColumn: destination.index,
         };
       } else if (sourceColumnId === destinationColumnId) {
         if (
-          task.indexInColumn > source.index &&
-          task.indexInColumn <= destination.index
+          workItem.indexInColumn > source.index &&
+          workItem.indexInColumn <= destination.index
         ) {
-          return { ...task, indexInColumn: task.indexInColumn - 1 };
+          return { ...workItem, indexInColumn: workItem.indexInColumn - 1 };
         } else if (
-          task.indexInColumn < source.index &&
-          task.indexInColumn >= destination.index
+          workItem.indexInColumn < source.index &&
+          workItem.indexInColumn >= destination.index
         ) {
-          return { ...task, indexInColumn: task.indexInColumn + 1 };
+          return { ...workItem, indexInColumn: workItem.indexInColumn + 1 };
         }
       } else {
         if (
-          task.columnId === sourceColumnId &&
-          task.indexInColumn > source.index
+          workItem.columnId === sourceColumnId &&
+          workItem.indexInColumn > source.index
         ) {
-          return { ...task, indexInColumn: task.indexInColumn - 1 };
+          return { ...workItem, indexInColumn: workItem.indexInColumn - 1 };
         } else if (
-          task.columnId === destinationColumnId &&
-          task.indexInColumn >= destination.index
+          workItem.columnId === destinationColumnId &&
+          workItem.indexInColumn >= destination.index
         ) {
-          return { ...task, indexInColumn: task.indexInColumn + 1 };
+          return { ...workItem, indexInColumn: workItem.indexInColumn + 1 };
         }
       }
-      return task;
+      return workItem;
     });
   }
 
-  handleTaskChange(event) {
-    const tasks = this.state.tasks.map(task => {
-      if (task.id.toString() === event.target.id) {
-        return { ...task, content: event.target.value };
+  handleWorkItemChange(event) {
+    const workItems = this.state.workItems.map(workItem => {
+      if (workItem.id.toString() === event.target.id) {
+        return { ...workItem, content: event.target.value };
       }
-      return task;
+      return workItem;
     });
-    this.setState({ tasks });
+    this.setState({ workItems });
   }
 
   handleAddClicked() {
-    const task = {
-      taskBoardId: this.state.taskboardId,
+    const workItem = {
+      taskBoardId: this.taskBoardId,
       id: uuidv4(),
       content: '',
       columnId: 0,
-      indexInColumn: this.state.tasks.filter(t => t.columnId === 0).length,
+      indexInColumn: this.state.workItems.filter(t => t.columnId === 0).length,
     };
-    this.setState({ tasks: [...this.state.tasks, task] });
+    this.setState({ workItems: [...this.state.workItems, workItem] });
   }
 
-  handleTaskDelete(task) {
-    const tasks = [...this.state.tasks];
-    tasks.splice(this.state.tasks.indexOf(task), 1);
-    this.setState({ tasks });
+  handleWorkItemDelete(workItem) {
+    const workItems = [...this.state.workItems];
+    const itemToDelete = workItems.find(item => item.id === workItem.id);
+    workItems.splice(this.state.workItems.indexOf(itemToDelete), 1);
+    this.setState({ workItems });
   }
 
   render() {
     const { classes } = this.props;
-    const { tasks, taskboardId } = this.state;
+    const { workItems } = this.state;
 
     return (
       <DragDropContext onDragEnd={this.handleDragEnd}>
         <div className={classes.container}>
-          <Typography variant="h4">Taskboard ID: {taskboardId}</Typography>
+          <Typography variant="h4">Taskboard ID: {this.taskBoardId}</Typography>
         </div>
         <div className={classes.container}>
           <Button
@@ -175,9 +175,11 @@ class TaskBoardPage extends Component {
             <Column
               key={column.id}
               column={column}
-              tasks={tasks.filter(task => task.columnId === column.id)}
-              onTaskChange={this.handleTaskChange}
-              onTaskDelete={this.handleTaskDelete}
+              workItems={workItems.filter(
+                workItem => workItem.columnId === column.id,
+              )}
+              onWorkItemChange={this.handleWorkItemChange}
+              onWorkItemDelete={this.handleWorkItemDelete}
             />
           ))}
         </div>

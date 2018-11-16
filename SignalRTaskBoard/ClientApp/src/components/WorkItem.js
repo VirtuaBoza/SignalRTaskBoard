@@ -1,10 +1,11 @@
 import React from 'react';
-import { Draggable } from 'react-beautiful-dnd';
+import PropTypes from 'prop-types';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
+import { Draggable } from 'react-beautiful-dnd';
 
 const styles = theme => ({
   container: {
@@ -12,11 +13,11 @@ const styles = theme => ({
   },
 });
 
-class Task extends React.Component {
+class WorkItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      inEditMode: props.task.content ? false : true,
+      inEditMode: props.workItem.content ? false : true,
     };
 
     this.handleClick = this.handleClick.bind(this);
@@ -31,12 +32,12 @@ class Task extends React.Component {
   handleBlur(event) {
     this.setState({ inEditMode: false });
 
-    const task = { ...this.props.task, content: event.target.value };
+    const workItem = { ...this.props.workItem, content: event.target.value };
 
-    if (task.content && !task.content.match(/^ *$/)) {
-      fetch(`api/workitems/${task.id}`, {
+    if (workItem.content && !workItem.content.match(/^ *$/)) {
+      fetch(`api/workitems/${workItem.id}`, {
         method: 'POST',
-        body: JSON.stringify(task),
+        body: JSON.stringify(workItem),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -44,10 +45,10 @@ class Task extends React.Component {
         console.error(error);
       });
     } else {
-      fetch(`api/workitems/${task.id}`, {
+      fetch(`api/workitems/${workItem.id}`, {
         method: 'DELETE',
       })
-        .then(() => this.props.onDelete(task))
+        .then(() => this.props.onDelete(workItem))
         .catch(error => {
           console.error(error);
         });
@@ -61,18 +62,22 @@ class Task extends React.Component {
   }
 
   render() {
-    const { task, onChange, classes } = this.props;
+    const { workItem, onChange, classes } = this.props;
     const { inEditMode } = this.state;
+
     return (
-      <Draggable draggableId={task.id.toString()} index={task.indexInColumn}>
+      <Draggable
+        draggableId={workItem.id.toString()}
+        index={workItem.indexInColumn}
+      >
         {provided => (
           <div className={classes.container} ref={provided.innerRef}>
             <Card {...provided.draggableProps} {...provided.dragHandleProps}>
               <CardContent onClick={this.handleClick}>
                 {inEditMode ? (
                   <TextField
-                    id={task.id.toString()}
-                    value={task.content ? task.content : ''}
+                    id={workItem.id.toString()}
+                    value={workItem.content ? workItem.content : ''}
                     onChange={onChange}
                     onBlur={this.handleBlur}
                     onKeyPress={this.handleKeyPress}
@@ -81,7 +86,7 @@ class Task extends React.Component {
                     autoFocus
                   />
                 ) : (
-                  <Typography variant="h6">{task.content}</Typography>
+                  <Typography variant="h6">{workItem.content}</Typography>
                 )}
               </CardContent>
             </Card>
@@ -92,4 +97,10 @@ class Task extends React.Component {
   }
 }
 
-export default withStyles(styles)(Task);
+WorkItem.propTypes = {
+  workItem: PropTypes.object.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+};
+
+export default withStyles(styles)(WorkItem);

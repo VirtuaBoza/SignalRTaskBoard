@@ -1,9 +1,9 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { Droppable } from 'react-beautiful-dnd';
-import Task from './Task';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import { Droppable } from 'react-beautiful-dnd';
+import WorkItem from './WorkItem';
 
 const styles = theme => ({
   container: {
@@ -27,7 +27,13 @@ const styles = theme => ({
   },
 });
 
-const Column = ({ column, tasks, onTaskChange, classes, onTaskDelete }) => {
+const Column = ({
+  column,
+  workItems,
+  onWorkItemChange,
+  onWorkItemDelete,
+  classes,
+}) => {
   return (
     <div className={classes.container}>
       <Paper>
@@ -45,14 +51,14 @@ const Column = ({ column, tasks, onTaskChange, classes, onTaskDelete }) => {
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
-              {[...tasks]
+              {[...workItems]
                 .sort((a, b) => a.indexInColumn - b.indexInColumn)
-                .map(task => (
-                  <Task
-                    key={task.id}
-                    task={task}
-                    onChange={onTaskChange}
-                    onDelete={onTaskDelete}
+                .map(workItem => (
+                  <WorkItem
+                    key={workItem.id}
+                    workItem={workItem}
+                    onChange={onWorkItemChange}
+                    onDelete={onWorkItemDelete}
                   />
                 ))}
               {provided.placeholder}

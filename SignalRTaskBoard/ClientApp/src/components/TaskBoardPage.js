@@ -64,7 +64,7 @@ class TaskBoardPage extends Component {
     const workItems = this.reorderWorkItems(draggableId, destination, source);
     this.setState({ workItems });
 
-    fetch('api/workitems', {
+    fetch(`api/taskboards/${this.taskBoardId}/workitems`, {
       method: 'PUT',
       body: JSON.stringify(workItems),
       headers: {

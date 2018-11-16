@@ -19,7 +19,7 @@ namespace SignalRTaskBoard.Controllers
             this.context = context;
         }
 
-        [HttpGet("taskboards/{taskBoardId}/workitems")]
+        [HttpGet("taskboards/{taskBoardId}/[controller]")]
         public async Task<IEnumerable<WorkItem>> GetTasks(int taskBoardId)
         {
             return await context.WorkItems
@@ -27,8 +27,8 @@ namespace SignalRTaskBoard.Controllers
                 .ToListAsync();
         }
 
-        [HttpPut("[controller]")]
-        public async Task<IActionResult> UpdateTasks([FromBody] WorkItem[] workItems)
+        [HttpPut("taskboards/{taskBoardId}/[controller]")]
+        public async Task<IActionResult> UpdateTasks(int taskBoardId, [FromBody] WorkItem[] workItems)
         {
             context.WorkItems.UpdateRange(workItems);
             try

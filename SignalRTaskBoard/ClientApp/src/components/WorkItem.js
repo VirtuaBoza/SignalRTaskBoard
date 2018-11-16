@@ -100,6 +100,7 @@ class WorkItem extends React.Component {
 WorkItem.propTypes = {
   workItem: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(WorkItem);

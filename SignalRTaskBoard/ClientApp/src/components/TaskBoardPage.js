@@ -149,7 +149,8 @@ class TaskBoardPage extends Component {
 
   handleWorkItemDelete(workItem) {
     const workItems = [...this.state.workItems];
-    workItems.splice(this.state.workItems.indexOf(workItem), 1);
+    const itemToDelete = workItems.find(item => item.id === workItem.id);
+    workItems.splice(this.state.workItems.indexOf(itemToDelete), 1);
     this.setState({ workItems });
   }
 

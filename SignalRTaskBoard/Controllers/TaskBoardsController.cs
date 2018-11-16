@@ -23,7 +23,6 @@ namespace SignalRTaskBoard.Controllers
             if (!id.HasValue) return BadRequest();
 
             var taskboard = await context.TaskBoards
-                .Include(t => t.WorkItems)
                 .SingleOrDefaultAsync(t => t.Id == id.Value);
 
             if (taskboard == null)

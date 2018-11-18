@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SignalRTaskBoard.Hubs;
 using SignalRTaskBoard.Persistence;
 
 namespace SignalRTaskBoard
@@ -21,6 +22,8 @@ namespace SignalRTaskBoard
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // In production, the React files will be served from this directory
@@ -51,7 +54,7 @@ namespace SignalRTaskBoard
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-
+            app.UseSignalR(routes => { routes.MapHub<TaskBoardHub>("/taskboardhub"); });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

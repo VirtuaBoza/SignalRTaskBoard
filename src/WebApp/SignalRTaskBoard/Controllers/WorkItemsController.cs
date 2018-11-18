@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using SignalRTaskBoard.Hubs;
 using SignalRTaskBoard.Models;
 using SignalRTaskBoard.Persistence;
 using System;
@@ -13,10 +15,14 @@ namespace SignalRTaskBoard.Controllers
     public class WorkItemsController : Controller
     {
         private readonly TaskBoardContext context;
+        private readonly IHubContext<TaskBoardHub> hubContext;
 
-        public WorkItemsController(TaskBoardContext context)
+        public WorkItemsController(
+            TaskBoardContext context,
+            IHubContext<TaskBoardHub> hubContext)
         {
             this.context = context;
+            this.hubContext = hubContext;
         }
 
         [HttpGet("taskboards/{taskBoardId}/[controller]")]
@@ -65,6 +71,8 @@ namespace SignalRTaskBoard.Controllers
             try
             {
                 await context.SaveChangesAsync();
+                await hubContext.Clients.Groups(workItem.TaskBoardId.ToString())
+                    .SendAsync("UpdateWorkItem", workItem);
                 return Ok();
             }
             catch (Exception e)

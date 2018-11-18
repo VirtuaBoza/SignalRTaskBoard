@@ -7,6 +7,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import uuidv4 from 'uuid/v4';
 import Column from './Column';
 import { COLUMNS } from '../constants';
+import { HubConnectionBuilder } from '@aspnet/signalr';
 
 const styles = theme => ({
   container: {
@@ -47,7 +48,30 @@ class TaskBoardPage extends Component {
         this.setState({ workItems });
       })
       .catch(() => this.props.history.push('/'));
+
+    const connection = new HubConnectionBuilder()
+      .withUrl('/taskboardhub')
+      .build();
+
+    connection.on('UpdateWorkItem', workItem => {
+      const workItems = this.state.workItems
+        .filter(item => item.id !== workItem.id)
+        .concat([workItem]);
+      this.setState({ workItems });
+    });
+
+    this.connectToHub(connection);
+    connection.onclose(() => this.connectToHub(connection));
   }
+
+  connectToHub = connection => {
+    connection.start()
+      .then(() => connection.send('JoinTaskBoard', this.taskBoardId))
+      .catch(error => {
+        console.error(error);
+        setTimeout(() => this.connectToHub(connection), 5000);
+    });
+  };
 
   handleDragEnd(result) {
     const { draggableId, destination, source } = result;

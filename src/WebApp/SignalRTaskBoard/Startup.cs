@@ -22,7 +22,7 @@ namespace SignalRTaskBoard
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR();
+            services.AddSignalR().AddAzureSignalR();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
@@ -54,7 +54,7 @@ namespace SignalRTaskBoard
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-            app.UseSignalR(routes => { routes.MapHub<TaskBoardHub>("/taskboardhub"); });
+            app.UseAzureSignalR(routes => { routes.MapHub<TaskBoardHub>("/taskboardhub"); });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

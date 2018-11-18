@@ -40,6 +40,8 @@ namespace SignalRTaskBoard.Controllers
             try
             {
                 await context.SaveChangesAsync();
+                await hubContext.Clients.Groups(taskBoardId.ToString())
+                    .SendAsync("UpdateWorkItems", workItems);
                 return Ok();
             }
             catch (Exception e)

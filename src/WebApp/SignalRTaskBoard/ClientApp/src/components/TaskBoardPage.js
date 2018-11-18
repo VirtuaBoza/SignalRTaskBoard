@@ -60,6 +60,10 @@ class TaskBoardPage extends Component {
       this.setState({ workItems });
     });
 
+    connection.on('UpdateWorkItems', workItems => {
+      this.setState({ workItems });
+    });
+
     this.connectToHub(connection);
     connection.onclose(() => this.connectToHub(connection));
   }

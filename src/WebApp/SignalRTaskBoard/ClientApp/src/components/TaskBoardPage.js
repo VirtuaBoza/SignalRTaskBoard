@@ -49,6 +49,20 @@ class TaskBoardPage extends Component {
       })
       .catch(() => this.props.history.push('/'));
 
+    this.createHubConnection();
+  }
+
+  connectToHub = (connection, callback) => {
+    connection
+      .start()
+      .then(callback)
+      .catch(error => {
+        console.error(error);
+        setTimeout(() => this.connectToHub(connection, callback), 5000);
+      });
+  };
+
+  createHubConnection = () => {
     const connection = new HubConnectionBuilder()
       .withUrl('/taskboardhub')
       .build();
@@ -64,17 +78,11 @@ class TaskBoardPage extends Component {
       this.setState({ workItems });
     });
 
-    this.connectToHub(connection);
-    connection.onclose(() => this.connectToHub(connection));
-  }
+    const callback = () => connection.send('JoinTaskBoard', this.taskBoardId);
 
-  connectToHub = connection => {
-    connection.start()
-      .then(() => connection.send('JoinTaskBoard', this.taskBoardId))
-      .catch(error => {
-        console.error(error);
-        setTimeout(() => this.connectToHub(connection), 5000);
-    });
+    this.connectToHub(connection, callback);
+
+    connection.onclose(() => this.connectToHub(connection, callback));
   };
 
   handleDragEnd(result) {

@@ -9,6 +9,8 @@ import Column from './Column';
 import { COLUMNS } from '../constants';
 import { HubConnectionBuilder } from '@aspnet/signalr';
 
+const apiBaseUrl = 'http://localhost:7071';
+
 const styles = theme => ({
   container: {
     display: 'flex',
@@ -50,7 +52,34 @@ class TaskBoardPage extends Component {
       .catch(() => this.props.history.push('/'));
 
     this.createHubConnection();
+
+    this.createAzHubConnection();
   }
+
+  createAzHubConnection = () => {
+    fetch(`${apiBaseUrl}/api/negotiate`)
+      .then(response => {
+        if (response.ok) return response.json();
+        throw response;
+      })
+      .then(info => {
+        const options = {
+          accessTokenFactory: () => info.accessToken,
+        };
+        const azConnection = new HubConnectionBuilder()
+          .withUrl(info.url, options)
+          .build();
+
+        azConnection.on('DeleteWorkItem', workItemId => {
+          const workItems = this.state.workItems.filter(
+            item => item.id !== workItemId,
+          );
+          this.setState({ workItems });
+        });
+
+        this.connectToHub(azConnection, () => {});
+      });
+  };
 
   connectToHub = (connection, callback) => {
     connection
@@ -184,10 +213,9 @@ class TaskBoardPage extends Component {
   }
 
   handleWorkItemDelete(workItem) {
-    const workItems = [...this.state.workItems];
-    const itemToDelete = workItems.find(item => item.id === workItem.id);
-    workItems.splice(this.state.workItems.indexOf(itemToDelete), 1);
-    this.setState({ workItems });
+    fetch(`${apiBaseUrl}/api/delete/${workItem.id}`, {
+      method: 'DELETE',
+    });
   }
 
   render() {
